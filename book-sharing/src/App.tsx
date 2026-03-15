@@ -4,10 +4,12 @@ import { useState } from 'react'
 // import heroImg from './assets/hero.png'
 import './App.css'
 import { Header } from './components/header/page.tsx'
+import { Book } from './components/books/book.tsx'
 
 function App() {
 
   const [search, setSearch] = useState(true);
+  const [post, setPost]     = useState(false);
 
   return (
     <>
@@ -19,10 +21,19 @@ function App() {
       </div>
 
       {search ? (
-        <p>Here is a Book Searching Area!</p>
+        <div className='transition-opacity duration-300'>
+          <div className='mb-6'>Here is a Book Searching Area!</div>
+          <div className='flex text-center justify-center flex-wrap gap-8'>
+            <Book></Book>
+            <Book></Book>
+            <Book></Book>
+          </div>
+        </div>
       ) : (
         <p>Here is a user searching Area!</p>
       )}
+
+      
     </>
   )
 
