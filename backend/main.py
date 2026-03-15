@@ -6,6 +6,18 @@ from auth import get_password_hash, verify_password, create_access_token, decode
 import time
 import uuid
 
+from fastapi.middleware.cors import CORSMiddleware
+
+app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],  # Viteのデフォルトポート
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 class User(BaseModel):
     name: str
     email: str
@@ -16,8 +28,6 @@ class LoginRequest(BaseModel):
     password: str
 
 init_db()
-
-app = FastAPI()
 
 @app.get('/')
 def root_index():
