@@ -10,6 +10,10 @@ from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
+# CORS(Cross-Origin Resource shareing)エラーが発生してしまうため、
+# こっちでlocahost:5173（viteのポート）を指定して
+# エラーが起きないようにしないといけない
+# https://qiita.com/higakin/items/fabe6a23d564b20ad558　を参照
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173"],  # Viteのデフォルトポート

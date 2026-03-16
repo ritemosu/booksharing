@@ -1,0 +1,42 @@
+import React, { createContext, useContext, useState } from 'react'
+
+// ログイン状況に関する関数や状態をまとめたもの。
+type AuthContextType = {
+    token: string | null
+    login: (token: string) => void
+    logout: () => void
+    isLoggedIn: boolean
+}
+
+const AuthContext = createContext<AuthContextType | null>(null)
+
+export function AuthProvider({ children }: {children: React.ReactNode}) {
+    const [token, setToken] = useState<string | null> (
+        localStorage.getItem('token')
+    )
+
+    const login = (newToken: string) => {
+        localStorage.setItem('token', newToken)
+        setToken(newToken)
+    }
+
+    const logout = () => {
+        localStorage.removeItem('token')
+        setToken(null)
+    }
+
+    return (
+        // Claude CodeのコードとかにはProviderがつくけど、
+        // 調べてみたらProviderをつけたりするのはReact 19以上では非推奨（古い書き方）
+        // とされてるみたい。
+        <AuthContext value={{token, login, logout, isLoggedIn: !!token}}>
+            { children }
+        </AuthContext>
+    )
+}
+
+export const useAuth = () => {
+    const context = useContext(AuthContext)
+    if (!context) throw new Error('Err')
+    return context
+}
