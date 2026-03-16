@@ -35,6 +35,11 @@ export function AuthProvider({ children }: {children: React.ReactNode}) {
     )
 }
 
+// カスタムフックでコンテクストを簡潔に取り出せるようにしている。
+// このログイン情報はすべてのコンポーネントで共有されるべきもので、
+// それぞれのコンポーネントによってどれが選択されるべきかが変わるため、
+// const { user_id } = useAuth()
+// のようにしたらすぐに取り出せる。
 export const useAuth = () => {
     const context = useContext(AuthContext)
     if (!context) throw new Error('Err')

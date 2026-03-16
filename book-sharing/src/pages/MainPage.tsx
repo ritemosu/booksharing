@@ -1,13 +1,40 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Book } from "../components/books/book";
 import { useAuth } from "../context/AuthContext";
 import { PostPage } from './PostPage'
 
+type Post = {
+    id: number
+    post_title: string
+    book_name: string
+    rating: number
+    review: string
+    image_path: string | null
+    purchase_url: string
+    author: string
+}
+
 export function MainPage() {
-    const [search, setSearch] = useState(true);
+    const [search, setSearch]             = useState(true);
     const [isPostOpen, setIsPostOpen]     = useState(false);
+    const [posts, setPosts]               = useState<Post[]>([])
 
     const { logout } = useAuth()
+
+    const fetchPosts = async () => {
+        try {
+            const res = await fetch('http://127.0.0.1:9000/posts',{
+                method: 'GET',
+            })
+           if (res.ok) setPosts(await res.json())
+        } catch (e) {
+            console.error(e)
+        }
+    }
+
+    useEffect(() => {
+        fetchPosts()
+    }, [])
 
     return (
     <div className='relative min-h-screen'>
@@ -20,9 +47,20 @@ export function MainPage() {
         <div className='transition-opacity duration-300'>
             <div className='mb-6'>Here is a Book Searching Area!</div>
             <div className='flex text-center justify-center flex-wrap gap-8'>
-            <Book></Book>
-            <Book></Book>
-            <Book></Book>
+                {posts.length === 0 ? (
+                    <p className='text-gray-400'>まだ投稿がありません</p>
+                ) : (
+                    posts.map(post => (
+                        <Book
+                            key={post.id}
+                            image={post.image_path ? `http://127.0.0.1:9000/${post.image_path}` : '/public/images/user.png'}
+                            summary_title={post.post_title}
+                            book_title={post.book_name}
+                            author={post.author}
+                            like={0}
+                        />
+                    ))
+                )}
             </div>
         </div>
         ) : (
@@ -41,7 +79,10 @@ export function MainPage() {
                         >
                             ✕
                         </button>
-                        <PostPage onSuccess={() => setIsPostOpen(false)} />
+                        <PostPage onSuccess={() => {
+                            setIsPostOpen(false)
+                            fetchPosts()
+                        }} />
                     </div>
                 </div>
         )}

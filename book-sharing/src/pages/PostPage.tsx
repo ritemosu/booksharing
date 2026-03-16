@@ -1,13 +1,17 @@
 import { useState, useRef } from 'react'
 import { useAuth } from '../context/AuthContext'
 
+type Props = {
+    onSuccess?: () => void;
+}
+
 type Errors = {
     postTitle?: string
     bookName?: string
     review?: string
 }
 
-export function PostPage() {
+export function PostPage({ onSuccess }: Props) {
     const { token } = useAuth()
 
     const [postTitle, setPostTitle]   = useState('')
@@ -59,7 +63,9 @@ export function PostPage() {
             formData.append('rating', String(rating))
             formData.append('purchase_url', purchaseUrl)
             formData.append('review', review)
-            if (image) formData.append('iamge', image)
+            if (image) {
+                formData.append('image', image)
+            }
 
             const res = await fetch('http://127.0.0.1:9000/posts', {
                 method: 'POST',
@@ -80,6 +86,9 @@ export function PostPage() {
             setImage(null)
             setPreview(null)
             setErrors({})
+
+            onSuccess?.()
+
         } catch {
             setErrors({ postTitle: '投稿に失敗しました。もう一度お試しください '})
         } finally {

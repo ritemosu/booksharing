@@ -45,7 +45,7 @@ def create_access_token(data: dict) -> str:
 
 # ここのDepends(oauth2_scheme)の箇所でトークン情報の呼び出しが必須となっている
 # この関数はmain.pyのget_me関数（ユーザー情報取得）の引数に入っており、ユーザー情報を得るときは必ず
-# このトークンをでコードして認証することが必須となる
+# このトークンをコードして認証することが必須となる
 def decode_token(token: Annotated[str, Depends(oauth2_scheme)]) -> str:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
