@@ -7,6 +7,8 @@ import { MainPage } from './pages/MainPage.tsx'
 
 function AppContent() {
   const { isLoggedIn, username } = useAuth()
+
+  // プロフィールからユーザーが投稿した感想一覧を取得する際に使います。
   const [myBooksUser, setMyBooksUser ] = useState<string>('')
 
   if (!isLoggedIn) return (
