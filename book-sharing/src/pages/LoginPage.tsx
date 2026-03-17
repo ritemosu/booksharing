@@ -8,7 +8,7 @@ export function LoginPage() {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [error, setError] = useState('')
-
+    
     const handleLogin = async () => {
         try {
             const res = await fetch('http://127.0.0.1:9000/user/login', {

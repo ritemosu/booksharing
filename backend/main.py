@@ -84,6 +84,67 @@ def login_user(request: LoginRequest):
     finally:
         conn.close()
 
+@app.get('/users/search')
+def get_user_post(user_name: str):
+    conn = get_db()
+    cur = conn.cursor()
+    try:
+        cur.execute('''
+                    SELECT p.id, p.post_title, p.book_name, p.rating, p.review_text, p.image_path, p.purchase_url, u.username
+                    FROM posts AS p JOIN users AS u ON p.user_id = u.id
+                    WHERE u.username LIKE ?
+                    ORDER BY p.created_at DESC
+                    ''',(f'%{user_name}%',))
+        rows = cur.fetchall()
+        print(len(rows))
+        return [
+            {
+                "id":           row[0],
+                "post_title":   row[1],
+                "book_name":    row[2],
+                "rating":       row[3],
+                "review":       row[4],
+                "image_path":   row[5],
+                "purchase_url": row[6],
+                "author":       row[7],
+            }
+            for row in rows
+        ]
+    except sqlite3.Error as e:
+        raise HTTPException(status_code=500, detail="内部サーバーエラー")
+    finally:
+        conn.close()
+
+@app.get('/posts/search')
+def get_title_post(title: str):
+    conn = get_db()
+    cur = conn.cursor()
+    print(title)
+    try:
+        cur.execute('''
+                    SELECT p.id, p.post_title, p.book_name, p.rating, p.review_text, p.image_path, p.purchase_url, u.username
+                    FROM posts AS p JOIN users AS u ON p.user_id = u.id
+                    WHERE p.book_name LIKE ?
+                    ORDER BY p.created_at DESC
+                    ''',(f'%{title}%',))
+        rows = cur.fetchall()
+        return [
+            {
+                "id":           row[0],
+                "post_title":   row[1],
+                "book_name":    row[2],
+                "rating":       row[3],
+                "review":       row[4],
+                "image_path":   row[5],
+                "purchase_url": row[6],
+                "author":       row[7],
+            }
+            for row in rows
+        ]
+    except sqlite3.Error as e:
+        raise HTTPException(status_code=500, detail="内部サーバーエラー")
+    finally:
+        conn.close()
 
 @app.get('/posts')
 def get_posts():

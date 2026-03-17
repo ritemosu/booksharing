@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Book } from "../components/books/book";
-import { useAuth } from "../context/AuthContext";
 import { PostPage } from './PostPage'
+import { useDebounce } from "use-debounce";
 
 type Post = {
     id: number
@@ -15,11 +15,33 @@ type Post = {
 }
 
 export function MainPage() {
-    const [search, setSearch]             = useState(true);
-    const [isPostOpen, setIsPostOpen]     = useState(false);
-    const [posts, setPosts]               = useState<Post[]>([])
+    const [search, setSearch]                   = useState(true);
+    const [isPostOpen, setIsPostOpen]           = useState(false);
+    const [searchTitleWords, setSearchWords]    = useState<string>("");
+    const [posts, setPosts]                     = useState<Post[]>([])
+    const [searchUserWords, setSearchUserWords] = useState<string>("");        
 
-    const { logout } = useAuth()
+    // デバウンスを用いて少し遅延。（文字が変わるたびに大量に送信してしまうため）
+    const [titleWords] = useDebounce(searchTitleWords, 300);
+    const [userName]   = useDebounce(searchUserWords, 300)
+
+    useEffect(() => {
+        if (!search) return  // ユーザータブにいるときは無視
+        if (titleWords === '') {
+            fetchPosts()
+        } else {
+            fetchTitlePosts()
+        }
+    }, [titleWords, search])
+
+    useEffect(() => {
+        if (search) return   // 本タブにいるときは無視
+        if (userName === '') {
+            setPosts([])     // 空のときは結果をリセット
+        } else {
+            fetchUser()
+        }
+    }, [userName, search])
 
     const fetchPosts = async () => {
         try {
@@ -32,20 +54,50 @@ export function MainPage() {
         }
     }
 
-    useEffect(() => {
-        fetchPosts()
-    }, [])
+    const fetchTitlePosts = async  () => {
+        try {
+            const res = await fetch(`http://127.0.0.1:9000/posts/search/?title=${titleWords}`,{
+                method: 'GET',
+            })
+            if (res.ok) setPosts(await res.json())
+        } catch(e){
+            console.error(e);
+        }
+    }
+
+    const fetchUser = async  () => {
+        try {
+            const res = await fetch(`http://127.0.0.1:9000/users/search?user_name=${userName}`,{
+                method: 'GET',
+            })
+            if (res.ok) setPosts(await res.json())
+        } catch(e){
+            console.error(e);
+        }
+    }
+
+    const handleTabSwitch = (isSearch: boolean) => {
+        setSearch(isSearch);
+        setPosts([])
+        setSearchWords('')
+        setSearchUserWords('')
+    }
 
     return (
     <div className='relative min-h-screen'>
         <div className={`flex text-center justify-center gap-12 mb-8`}>
-        <div className={`text-2xl font-bold hover:text-cyan-300 hover:cursor-pointer ${search? 'text-blue-300': ''}`} onClick={() => setSearch(true)}>Searching for books</div>
-        <div className={`text-2xl font-bold hover:text-cyan-300 hover:cursor-pointer ${search? '': 'text-blue-300'}`} onClick={() => setSearch(false)}>Searching for users</div>
+            <div className={`text-2xl font-bold hover:text-cyan-300 hover:cursor-pointer ${search? 'text-blue-300': ''}`} onClick={() => handleTabSwitch(true)}>Searching for books</div>
+            <div className={`text-2xl font-bold hover:text-cyan-300 hover:cursor-pointer ${search? '': 'text-blue-300'}`} onClick={() => handleTabSwitch(false)}>Searching for users</div>
         </div>
-
+        
         {search ? (
         <div className='transition-opacity duration-300'>
             <div className='mb-6'>Here is a Book Searching Area!</div>
+
+            <div className="mb-7 flex items-center justify-center">
+                <input type="text" placeholder="デザイン入門教室" value={searchTitleWords} className="border-2 p-3 rounded-2xl w-3/6 focus:outline-none" onChange={e => setSearchWords(e.target.value)}/>
+            </div>
+
             <div className='flex text-center justify-center flex-wrap gap-8'>
                 {posts.length === 0 ? (
                     <p className='text-gray-400'>まだ投稿がありません</p>
@@ -58,13 +110,40 @@ export function MainPage() {
                             book_title={post.book_name}
                             author={post.author}
                             like={0}
+                            review={post.review}
+                            rating={post.rating}
                         />
                     ))
                 )}
             </div>
         </div>
         ) : (
-        <p onClick={() => logout()}>Here is a user searching Area!</p>
+        <div className='transition-opacity duration-300'>
+            <div className='mb-6'>You can search for users!!</div>
+
+            <div className="mb-7 flex items-center justify-center">
+                <input type="text" placeholder="Litms" value={searchUserWords} className="border-2 p-3 rounded-2xl w-3/6 focus:outline-none" onChange={e => setSearchUserWords(e.target.value)}/>
+            </div>
+
+            <div className='flex text-center justify-center flex-wrap gap-8'>
+                {posts.length === 0 ? (
+                    <p className='text-gray-400'>まだ投稿がありません</p>
+                ) : (
+                    posts.map(post => (
+                        <Book
+                            key={post.id}
+                            image={post.image_path ? `http://127.0.0.1:9000/${post.image_path}` : '/public/images/user.png'}
+                            summary_title={post.post_title}
+                            book_title={post.book_name}
+                            author={post.author}
+                            like={0}
+                            review={post.review}
+                            rating={post.rating}
+                        />
+                    ))
+                )}
+            </div>
+        </div>
         )}
 
         { isPostOpen && (
