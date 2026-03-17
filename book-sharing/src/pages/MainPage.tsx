@@ -3,6 +3,7 @@ import { Book } from "../components/books/book";
 import { PostPage } from './PostPage'
 import { useDebounce } from "use-debounce";
 
+// 投稿が持っているべき情報です。
 type Post = {
     id: number
     post_title: string
@@ -14,6 +15,7 @@ type Post = {
     author: string
 }
 
+// propsとしてユーザーが指定されているかどうかを確認します。
 type Props = {
     myBookUsers?: string
     onMyBooksConsumed?: () => void
@@ -22,16 +24,22 @@ type Props = {
 
 export function MainPage({ myBookUsers, onMyBooksConsumed }: Props) {
 
+    // False = 書籍名検索, True = ユーザー名検索
     const [search, setSearch]                   = useState(true);
+    // 投稿状態かどうか
     const [isPostOpen, setIsPostOpen]           = useState(false);
+    // 書籍名検索時に保持される文字列
     const [searchTitleWords, setSearchWords]    = useState<string>("");
+    // 画面に表示される投稿一覧
     const [posts, setPosts]                     = useState<Post[]>([])
+    // ユーザー名検索時に保持される文字列
     const [searchUserWords, setSearchUserWords] = useState<string>("");        
 
     // デバウンスを用いて少し遅延。（文字が変わるたびに大量に送信してしまうため）
     const [titleWords] = useDebounce(searchTitleWords, 300);
     const [userName]   = useDebounce(searchUserWords, 300)
 
+    // プロフィールのmyBooksがクリックされたら自分が投稿したものの一覧を見れる。
     useEffect(() => {
         if (myBookUsers) {
             setSearch(false)
@@ -61,6 +69,7 @@ export function MainPage({ myBookUsers, onMyBooksConsumed }: Props) {
         }
     }, [userName, search])
 
+    // 投稿全体をフェッチ
     const fetchPosts = async () => {
         try {
             const res = await fetch('http://127.0.0.1:9000/posts',{
@@ -72,6 +81,7 @@ export function MainPage({ myBookUsers, onMyBooksConsumed }: Props) {
         }
     }
 
+    // タイトルと部分一致するものだけをフェッチ
     const fetchTitlePosts = async  () => {
         try {
             const res = await fetch(`http://127.0.0.1:9000/posts/search/?title=${titleWords}`,{
@@ -83,6 +93,7 @@ export function MainPage({ myBookUsers, onMyBooksConsumed }: Props) {
         }
     }
 
+    // ユーザー名と一致するものだけをフェッチ
     const fetchUser = async  () => {
         try {
             const res = await fetch(`http://127.0.0.1:9000/users/search?user_name=${userName}`,{
@@ -94,6 +105,7 @@ export function MainPage({ myBookUsers, onMyBooksConsumed }: Props) {
         }
     }
 
+    // search for users と　booksが切り替わったときに情報をリセットする。
     const handleTabSwitch = (isSearch: boolean) => {
         setSearch(isSearch);
         setPosts([])
@@ -118,7 +130,7 @@ export function MainPage({ myBookUsers, onMyBooksConsumed }: Props) {
 
             <div className='flex text-center justify-center flex-wrap gap-8'>
                 {posts.length === 0 ? (
-                    <p className='text-gray-400'>まだ投稿がありません</p>
+                    <p className='text-gray-400'>Unfortunately, There's no posts</p>
                 ) : (
                     posts.map(post => (
                         <Book
@@ -145,7 +157,7 @@ export function MainPage({ myBookUsers, onMyBooksConsumed }: Props) {
 
             <div className='flex text-center justify-center flex-wrap gap-8'>
                 {posts.length === 0 ? (
-                    <p className='text-gray-400'>まだ投稿がありません</p>
+                    <p className='text-gray-400'>Unfortunately, There's no posts</p>
                 ) : (
                     posts.map(post => (
                         <Book
