@@ -1,7 +1,7 @@
 import { useAuth } from "../../context/AuthContext";
 import { useState } from "react";
 
-export function Profile() {
+export function Profile({ onMyBooks }: { onMyBooks: () => void }) {
 
     const { isLoggedIn, logout } = useAuth()
 
@@ -20,9 +20,9 @@ export function Profile() {
                 shadow-stone-700
                 rounded-md
                 ${clicked? 'opacity-100':'opacity-0'}` }
-                onClick={logout}
                 >
-                <p className='font-bold text-[15px]'>Logout</p>
+                <p className='font-bold text-[15px] border-b-2 hover:text-blue-50 transition-all duration-200 ' onClick={e => {e.stopPropagation(); onMyBooks()}}>MyBooks</p>
+                <p className='font-bold text-[15px] border-b-2 hover:text-blue-50 transition-all duration-200' onClick={logout} >Logout</p>
             </div>
         </div>
     )

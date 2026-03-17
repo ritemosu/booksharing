@@ -6,6 +6,8 @@ type AuthContextType = {
     login: (token: string) => void
     logout: () => void
     isLoggedIn: boolean
+    username: string
+    setUsername: (name: string) => void
 }
 
 const AuthContext = createContext<AuthContextType | null>(null)
@@ -15,6 +17,10 @@ export function AuthProvider({ children }: {children: React.ReactNode}) {
         localStorage.getItem('token')
     )
 
+    const [username, setUsername] = useState<string>(
+        localStorage.getItem('username') || ''
+    )
+
     const login = (newToken: string) => {
         localStorage.setItem('token', newToken)
         setToken(newToken)
@@ -22,14 +28,16 @@ export function AuthProvider({ children }: {children: React.ReactNode}) {
 
     const logout = () => {
         localStorage.removeItem('token')
+        localStorage.removeItem('username')
         setToken(null)
+        setUsername('')
     }
 
     return (
         // Claude CodeのコードとかにはProviderがつくけど、
         // 調べてみたらProviderをつけたりするのはReact 19以上では非推奨（古い書き方）
         // とされてるみたい。
-        <AuthContext value={{token, login, logout, isLoggedIn: !!token}}>
+        <AuthContext value={{token, login, logout, isLoggedIn: !!token, username, setUsername}}>
             { children }
         </AuthContext>
     )

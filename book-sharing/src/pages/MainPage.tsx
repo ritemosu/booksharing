@@ -14,7 +14,14 @@ type Post = {
     author: string
 }
 
-export function MainPage() {
+type Props = {
+    myBookUsers?: string
+    onMyBooksConsumed?: () => void
+    goToMyBooks?: () => void
+}
+
+export function MainPage({ myBookUsers, onMyBooksConsumed }: Props) {
+
     const [search, setSearch]                   = useState(true);
     const [isPostOpen, setIsPostOpen]           = useState(false);
     const [searchTitleWords, setSearchWords]    = useState<string>("");
@@ -24,6 +31,17 @@ export function MainPage() {
     // デバウンスを用いて少し遅延。（文字が変わるたびに大量に送信してしまうため）
     const [titleWords] = useDebounce(searchTitleWords, 300);
     const [userName]   = useDebounce(searchUserWords, 300)
+
+    useEffect(() => {
+        if (myBookUsers) {
+            setSearch(false)
+            // setPosts([])
+            console.log(myBookUsers)
+            setSearchUserWords(myBookUsers)
+            onMyBooksConsumed?.()
+            console.log(myBookUsers)
+        }
+    }, [myBookUsers])
 
     useEffect(() => {
         if (!search) return  // ユーザータブにいるときは無視
@@ -92,7 +110,7 @@ export function MainPage() {
         
         {search ? (
         <div className='transition-opacity duration-300'>
-            <div className='mb-6'>Here is a Book Searching Area!</div>
+            <div className='mb-6 text-center'>Here is a Book Searching Area!</div>
 
             <div className="mb-7 flex items-center justify-center">
                 <input type="text" placeholder="デザイン入門教室" value={searchTitleWords} className="border-2 p-3 rounded-2xl w-3/6 focus:outline-none" onChange={e => setSearchWords(e.target.value)}/>
@@ -119,7 +137,7 @@ export function MainPage() {
         </div>
         ) : (
         <div className='transition-opacity duration-300'>
-            <div className='mb-6'>You can search for users!!</div>
+            <div className='mb-6 text-center'>You can search for users!!</div>
 
             <div className="mb-7 flex items-center justify-center">
                 <input type="text" placeholder="Litms" value={searchUserWords} className="border-2 p-3 rounded-2xl w-3/6 focus:outline-none" onChange={e => setSearchUserWords(e.target.value)}/>

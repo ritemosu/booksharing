@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 
 export function LoginPage() {
-    const { login } = useAuth()
+    const { login, setUsername } = useAuth()
     const [isLogin, setIsLogin] = useState(true)
     const [name, setName] = useState('')
     const [email, setEmail] = useState('')
@@ -25,6 +25,15 @@ export function LoginPage() {
             const data = await res.json()
             login(data.access_token)
 
+            const meRes = await fetch('http://127.0.0.1:9000/users/me', {
+                headers: { 'Authorization': `Bearer ${data.access_token}` }
+            })
+            if (meRes.ok) {
+                const me = await meRes.json()
+                setUsername(me.username)
+                localStorage.setItem('username', me.username)
+            }
+
         } catch (e) {
             setError('Connection Error')
         }
@@ -45,7 +54,7 @@ export function LoginPage() {
           
           clear()
       } catch (e) {
-          setError('Connection Error')
+          setError('ユーザー名が既に使われている可能性があります。ほかのユーザー名をお試しください。')
       }
     }
 
